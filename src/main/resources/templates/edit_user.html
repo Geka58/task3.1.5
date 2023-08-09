@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Update User</title>
+</head>
+<body>
+<H3>Страница изменения пользователя</H3>
+<form action="#" th:action="@{/admin/edit/{id}(id=${editUser.getId()})}" th:object="${editUser}" method="post">
+  <label>Name</label>
+  <input type="text" th:field="*{username}"><br/>
+  <br>
+  <label>LastName</label>
+  <input type="text" th:field="*{lastName}"><br/>
+  <br>
+  <label>Age</label>
+  <input type="text" th:field="*{age}"><br/>
+  <br>
+  <label>Password</label>
+  <input type="text" th:field="*{password}"><br/>
+  <br>
+  <label>Email</label>
+  <input type="text" th:field="*{email}"><br/>
+  <br>
+  <label>Role</label>
+  <select multiple="multiple" th:field="*{roles}" id="roles">
+    <option th:each="role : ${roles}"
+            th:value="${role.getId()}"
+            th:text="${role.getName}"></option>
+  </select>
+  <br><br>
+  <br>
+  <button type="submit">Update On Table</button>
+  <br><br>
+  <input type="button" value="Logout" onclick="window.location.href = '/logout'">
+</form>
+</body>
+</html>
