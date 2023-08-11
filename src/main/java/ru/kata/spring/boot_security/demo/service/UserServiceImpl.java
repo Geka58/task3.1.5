@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.repositories.UserRepository;
+import ru.kata.spring.boot_security.demo.repository.RoleRepository;
+import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,16 +26,20 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, @Lazy PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository,
+                           @Lazy PasswordEncoder passwordEncoder,
+                           RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.roleRepository = roleRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<User> listUser() {
+    public List<User> getAllUser() {
         return userRepository.findAll();
     }
 
@@ -41,7 +47,12 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Transactional
     public void addUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        if (userRepository.findByEmail(user.getEmail()) == null) {
+            if (user.getRoles().isEmpty()) {
+                user.setRoles(Collections.singleton(roleRepository.getOne(1)));
+            }
+            userRepository.save(user);
+        }
     }
 
     @Override
@@ -67,9 +78,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         User user = userRepository.getById(id);
         user.setUsername(userUpdate.getUsername());
         user.setLastName(userUpdate.getLastName());
+        user.setAge(userUpdate.getAge());
         user.setPassword(userUpdate.getPassword());
-        user.setRoles(userUpdate.getRoles());
-        userRepository.save(user);
+        user.setEmail(userUpdate.getEmail());
+        if (userUpdate.getRoles().isEmpty()) {
+            user.setRoles(Collections.singleton(roleRepository.getOne(1)));
+        } else {
+            user.setRoles(userUpdate.getRoles());
+        }
     }
 
     @Override

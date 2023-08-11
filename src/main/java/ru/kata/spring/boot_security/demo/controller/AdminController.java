@@ -2,7 +2,6 @@ package ru.kata.spring.boot_security.demo.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -16,24 +15,24 @@ import ru.kata.spring.boot_security.demo.service.UserService;
 import javax.validation.Valid;
 
 
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
     private final UserService userService;
     private final RoleService roleService;
-    private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public AdminController(UserService userService, RoleService roleService, PasswordEncoder passwordEncoder) {
+    public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
-        this.passwordEncoder = passwordEncoder;
+
     }
 
     @GetMapping
     public String userList(ModelMap model) {
-        model.addAttribute("user", userService.listUser());
+        model.addAttribute("user", userService.getAllUser());
         model.addAttribute("role", roleService.getAllRoles());
         return "user_table";
     }
@@ -48,7 +47,7 @@ public class AdminController {
     @PostMapping("/addUser")
     public String addNewUser(@ModelAttribute("user") @Valid User user, BindingResult result) {
         if (result.hasErrors()) {
-            return "/add_user";
+            return "add_user";
         }
         userService.addUser(user);
         return "redirect:/admin";
@@ -69,7 +68,10 @@ public class AdminController {
 
     @PostMapping("/edit/{id}")
     public String updateUser(@ModelAttribute("editUser") User user, @PathVariable Integer id,
-                             @ModelAttribute("editRoles") Role role) {
+                             @ModelAttribute("editRoles") Role role, BindingResult result) {
+        if (result.hasErrors()) {
+            return "/edit_user";
+        }
         userService.updateUser(user, id);
 
         return "redirect:/admin";

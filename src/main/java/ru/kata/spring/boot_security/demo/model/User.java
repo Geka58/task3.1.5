@@ -6,7 +6,16 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import javax.persistence.Column;
+import javax.persistence.ManyToMany;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.GenerationType;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.validation.constraints.*;
 import java.util.Collection;
 
 @Entity
@@ -18,14 +27,26 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     @Column(name = "name")
+    @NotNull
+    @NotEmpty
     private String username;
     @Column(name = "last_name")
+    @NotNull
+    @NotEmpty
     private String lastName;
     @Column(name = "age")
+    @NotNull
+    @Min(value = 0, message = "Возрост не может быть меньше нуля")
+    @Max(value = 100, message = "Максимальный возрост не привышает 100 лет")
     private int age;
     @Column(name = "password")
+    @NotNull
+    @NotEmpty
     private String password;
     @Column(name = "email")
+    @Email(message = "адресс не существует")
+    @NotNull
+    @NotEmpty(message = " Адрес не должен быть пустым")
     private String email;
 
     @ManyToMany

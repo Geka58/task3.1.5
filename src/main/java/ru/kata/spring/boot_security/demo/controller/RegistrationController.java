@@ -8,22 +8,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.kata.spring.boot_security.demo.model.User;
-import ru.kata.spring.boot_security.demo.repositories.RoleRepository;
 import ru.kata.spring.boot_security.demo.service.UserService;
 
 import javax.validation.Valid;
-import java.util.Collections;
 
 @Controller
 public class RegistrationController {
 
     private final UserService userService;
-    private final RoleRepository roleRepository;
 
     @Autowired
-    public RegistrationController(UserService userService, RoleRepository roleRepository) {
+    public RegistrationController(UserService userService) {
         this.userService = userService;
-        this.roleRepository = roleRepository;
+
     }
 
     @GetMapping("/registration")
@@ -36,12 +33,10 @@ public class RegistrationController {
     public String addNewUser(@ModelAttribute("user") @Valid User user, BindingResult result) {
         if (result.hasErrors()) {
             return "redirect:/";
-        } else if (userService.findByEmail(user.getEmail()) == null) {
-            user.setRoles(Collections.singleton(roleRepository.getOne(1)));
+        } else {
             userService.addUser(user);
             return "redirect:/login";
         }
-        return "redirect:/";
     }
 
     @GetMapping(value = "/")
