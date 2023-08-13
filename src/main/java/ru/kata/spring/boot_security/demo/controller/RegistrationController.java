@@ -34,7 +34,7 @@ public class RegistrationController {
         if (result.hasErrors()) {
             return "redirect:/";
         } else {
-            userService.addUser(user);
+            userService.registration(user);
             return "redirect:/login";
         }
     }

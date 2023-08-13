@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
@@ -35,6 +36,13 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
+    }
+
+    @Override
+    public void registration(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setRoles(Collections.singleton(roleRepository.getOne(1)));
+        userRepository.save(user);
     }
 
     @Override
@@ -61,7 +69,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    @Transactional
     public void deleteUser(int id) {
         userRepository.deleteById(id);
     }
@@ -73,7 +80,6 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    @Transactional
     public void updateUser(User userUpdate, Integer id) {
         User user = userRepository.getById(id);
         user.setUsername(userUpdate.getUsername());
