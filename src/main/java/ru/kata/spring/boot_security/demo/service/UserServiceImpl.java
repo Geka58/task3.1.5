@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     public void addUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         if (userRepository.findByEmail(user.getEmail()) == null) {
-            if (user.getRoles().isEmpty()) {
+            if (user.getRoles()==null) {
                 user.setRoles(Collections.singleton(roleRepository.getOne(1)));
             }
             userRepository.save(user);
@@ -80,7 +80,10 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void updateUser(User userUpdate, Integer id) {
+        System.out.println(userUpdate);
         User user = userRepository.getById(id);
+        System.out.println(user);
+        System.out.println(userUpdate.getEmail());
         user.setUsername(userUpdate.getUsername());
         user.setLastName(userUpdate.getLastName());
         user.setAge(userUpdate.getAge());
