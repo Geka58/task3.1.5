@@ -100,14 +100,11 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email);
+        System.out.println(user);
         if (user == null) {
             throw new UsernameNotFoundException(String.format("User '%S' not find", email));
         }
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword()
-                , mapRolesToAuthorities(user.getRoles()));
+        return user;
     }
 
-    private Collection<? extends GrantedAuthority> mapRolesToAuthorities(Collection<Role> roles) {
-        return roles.stream().map(r -> new SimpleGrantedAuthority(r.getName())).collect(Collectors.toList());
-    }
 }

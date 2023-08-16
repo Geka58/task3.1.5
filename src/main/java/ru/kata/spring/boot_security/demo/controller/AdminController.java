@@ -35,7 +35,6 @@ public class AdminController {
         User authenticatedUser = userService.findByEmail(principal.getName());
         model.addAttribute("authenticatedUser", authenticatedUser);
         model.addAttribute("users", userService.getAllUser());
-        model.addAttribute("userss", authenticatedUser.getRoles());
         model.addAttribute("role", roleService.getAllRoles());
         return "user_table";
     }
