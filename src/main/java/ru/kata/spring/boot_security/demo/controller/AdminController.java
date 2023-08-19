@@ -2,6 +2,7 @@ package ru.kata.spring.boot_security.demo.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
@@ -31,8 +32,8 @@ public class AdminController {
     }
 
     @GetMapping
-    public String userList(@ModelAttribute("user") User user, ModelMap model, Principal principal) {
-        User authenticatedUser = userService.findByEmail(principal.getName());
+    public String userList(@ModelAttribute("user") User user, @AuthenticationPrincipal User user1, ModelMap model, Principal principal) {
+        User authenticatedUser = userService.findByUser(principal.getName());
         model.addAttribute("authenticatedUser", authenticatedUser);
         model.addAttribute("users", userService.getAllUser());
         model.addAttribute("role", roleService.getAllRoles());
@@ -72,7 +73,6 @@ public class AdminController {
         if (result.hasErrors()) {
             return "/edit_user";
         }
-
         userService.updateUser(user, id);
 
         return "redirect:/admin";

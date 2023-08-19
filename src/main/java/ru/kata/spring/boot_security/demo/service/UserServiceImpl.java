@@ -3,23 +3,18 @@ package ru.kata.spring.boot_security.demo.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.repository.RoleRepository;
 import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -40,26 +35,37 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void registration(User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRoles(Collections.singleton(roleRepository.getOne(1)));
-        userRepository.save(user);
+        if (userRepository.findByEmail(user.getEmail()) == null) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            user.setRoles(Collections.singleton(roleRepository.getOne(1)));
+            userRepository.save(user);
+        }
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<User> getAllUser() {
-        return userRepository.findAll();
+        List<User> userList = userRepository.findAll();
+        for (User user : userList) {
+            System.out.println(user.getUsername());
+        }
+        return userList;
     }
 
     @Override
     public void addUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         if (userRepository.findByEmail(user.getEmail()) == null) {
-            if (user.getRoles()==null) {
+            if (user.getRoles() == null) {
                 user.setRoles(Collections.singleton(roleRepository.getOne(1)));
             }
             userRepository.save(user);
         }
+    }
+
+    @Override
+    public User findByUser(String name) {
+        return userRepository.findByUsername(name);
     }
 
     @Override
@@ -80,15 +86,14 @@ public class UserServiceImpl implements UserService, UserDetailsService {
 
     @Override
     public void updateUser(User userUpdate, Integer id) {
-        System.out.println(userUpdate);
         User user = userRepository.getById(id);
-        System.out.println(user);
-        System.out.println(userUpdate.getEmail());
         user.setUsername(userUpdate.getUsername());
         user.setLastName(userUpdate.getLastName());
         user.setAge(userUpdate.getAge());
         user.setPassword(userUpdate.getPassword());
-        user.setEmail(userUpdate.getEmail());
+        if (userRepository.findByEmail(userUpdate.getEmail()) == null) {
+            user.setEmail(userUpdate.getEmail());
+        }
         if (userUpdate.getRoles().isEmpty()) {
             user.setRoles(Collections.singleton(roleRepository.getOne(1)));
         } else {
