@@ -2,79 +2,61 @@ package ru.kata.spring.boot_security.demo.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
-import org.springframework.validation.BindingResult;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-import ru.kata.spring.boot_security.demo.model.Role;
 import ru.kata.spring.boot_security.demo.model.User;
 import ru.kata.spring.boot_security.demo.service.RoleService;
 import ru.kata.spring.boot_security.demo.service.UserService;
+import ru.kata.spring.boot_security.demo.service.UserServiceImpl;
 
-import javax.validation.Valid;
-import java.security.Principal;
+import java.util.List;
 
 
-@Controller
+@RestController
 @RequestMapping("/admin")
+@CrossOrigin
 public class AdminController {
 
     private final UserService userService;
     private final RoleService roleService;
+    public final UserServiceImpl userServiceImpl;
+
 
     @Autowired
-    public AdminController(UserService userService, RoleService roleService) {
+    public AdminController(UserService userService, RoleService roleService, UserServiceImpl userServiceImpl) {
         this.userService = userService;
         this.roleService = roleService;
-
+        this.userServiceImpl = userServiceImpl;
     }
 
-    @GetMapping
-    public String userList(@ModelAttribute("user") User user, @AuthenticationPrincipal User user1, ModelMap model, Principal principal) {
-        User authenticatedUser = userService.findByUser(principal.getName());
-        model.addAttribute("authenticatedUser", authenticatedUser);
-        model.addAttribute("users", userService.getAllUser());
-        model.addAttribute("role", roleService.getAllRoles());
-        return "user_table";
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> showAllUsers() {
+        return new ResponseEntity<>(userService.getAllUser(), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/addUser")
-    public String addUser(Model model) {
-        model.addAttribute("user", new User());
-        model.addAttribute("roles", roleService.getAllRoles());
-        return "add_user";
+    @GetMapping("/users/{id}")
+    public ResponseEntity<User> edit(@PathVariable("id") int id) {
+        User user = userService.getUserById(id);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PostMapping("/addUser")
-    public String addNewUser(@ModelAttribute("user") @Valid User user) {
+    @PostMapping("/users")
+    public ResponseEntity<UserDetails> addUser(@RequestBody User user) {
         userService.addUser(user);
-        return "redirect:/admin";
+        return ResponseEntity.ok(userServiceImpl.loadUserByUsername(user.getEmail()));
     }
 
-    @DeleteMapping("/delete/{id}")
-    public String deleteUser(@PathVariable int id) {
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") int id) {
         userService.deleteUser(id);
-        return "redirect:/admin";
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @GetMapping("/edit/{id}")
-    public String edit(@PathVariable int id, ModelMap model) {
-        model.addAttribute("editUser", userService.getUserById(id));
-        model.addAttribute("roles", roleService.getAllRoles());
-        return "edit_user";
-    }
-
-    @PatchMapping("/update/{id}")
-    public String updateUser(@ModelAttribute("editUser") User user, @PathVariable("id") Integer id,
-                             @ModelAttribute("editRoles") Role role, BindingResult result) {
-
-        if (result.hasErrors()) {
-            return "/edit_user";
-        }
+    @PatchMapping(value = "/users/{id}")
+    public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable("id") int id) {
         userService.updateUser(user, id);
-
-        return "redirect:/admin";
+        return ResponseEntity.ok(user);
     }
 }

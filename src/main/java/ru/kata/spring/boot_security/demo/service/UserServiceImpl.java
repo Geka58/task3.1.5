@@ -15,6 +15,7 @@ import ru.kata.spring.boot_security.demo.repository.UserRepository;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -34,38 +35,27 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     }
 
     @Override
-    public void registration(User user) {
-        if (userRepository.findByEmail(user.getEmail()) == null) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            user.setRoles(Collections.singleton(roleRepository.getOne(1)));
-            userRepository.save(user);
-        }
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public List<User> getAllUser() {
-        List<User> userList = userRepository.findAll();
-        for (User user : userList) {
-            System.out.println(user.getUsername());
-        }
-        return userList;
+        return userRepository.findAll();
+
     }
 
     @Override
     public void addUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         if (userRepository.findByEmail(user.getEmail()) == null) {
-            if (user.getRoles() == null) {
-                user.setRoles(Collections.singleton(roleRepository.getOne(1)));
+            if (user.getRoles().isEmpty()) {
+                user.setRoles(Collections.singleton(roleRepository.getOne(2)));
             }
+
             userRepository.save(user);
         }
     }
 
     @Override
-    public User findByUser(String name) {
-        return userRepository.findByUsername(name);
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     @Override
@@ -95,7 +85,7 @@ public class UserServiceImpl implements UserService, UserDetailsService {
             user.setEmail(userUpdate.getEmail());
         }
         if (userUpdate.getRoles().isEmpty()) {
-            user.setRoles(Collections.singleton(roleRepository.getOne(1)));
+            user.setRoles(Collections.singleton(roleRepository.getOne(2)));
         } else {
             user.setRoles(userUpdate.getRoles());
         }
